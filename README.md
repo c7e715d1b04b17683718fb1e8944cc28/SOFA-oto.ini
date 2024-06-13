@@ -1,2 +1,2 @@
-# otoper
-Use whisper to generate oto.ini.
+# SOFA-oto.ini
+Use SOFA to generate oto.ini.
