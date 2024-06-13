@@ -1,0 +1,2 @@
+pyopenjtalk==0.3.3
+utaupy==1.18.3
