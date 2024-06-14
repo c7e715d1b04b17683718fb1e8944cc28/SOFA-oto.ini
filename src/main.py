@@ -180,24 +180,24 @@ def main():
         pass
 
     # Convert Easily
-    time_order_ratio = 10 ** (-4)
-    otoini = utaupy.otoini.OtoIni()
-    with tqdm.tqdm(total=len(voicebank_wav_files)) as pbar:
-        for wav_file in voicebank_wav_files:
-            file_name = pathlib.Path(wav_file).stem
-            label = utaupy.label.load(voicebank_folder_path + "/" + file_name + ".lab")
-            for phoneme in label:
-                oto = utaupy.otoini.Oto()
-                oto.filename = file_name + ".wav"
-                oto.alias = phoneme.symbol
-                oto.offset = phoneme.start * time_order_ratio
-                oto.overlap = 0.0
-                oto.preutterance = 0.0
-                oto.consonant = (phoneme.end - phoneme.start) * time_order_ratio
-                oto.cutoff = -(phoneme.end - phoneme.start) * time_order_ratio
-                otoini.append(oto)
-            pbar.update(1)
-    otoini.write(voicebank_folder_path + "/oto-SOFA.ini")
+    # time_order_ratio = 10 ** (-4)
+    # otoini = utaupy.otoini.OtoIni()
+    # with tqdm.tqdm(total=len(voicebank_wav_files)) as pbar:
+    #     for wav_file in voicebank_wav_files:
+    #         file_name = pathlib.Path(wav_file).stem
+    #         label = utaupy.label.load(voicebank_folder_path + "/" + file_name + ".lab")
+    #         for phoneme in label:
+    #             oto = utaupy.otoini.Oto()
+    #             oto.filename = file_name + ".wav"
+    #             oto.alias = phoneme.symbol
+    #             oto.offset = phoneme.start * time_order_ratio
+    #             oto.overlap = 0.0
+    #             oto.preutterance = 0.0
+    #             oto.consonant = (phoneme.end - phoneme.start) * time_order_ratio
+    #             oto.cutoff = -(phoneme.end - phoneme.start) * time_order_ratio
+    #             otoini.append(oto)
+    #         pbar.update(1)
+    # otoini.write(voicebank_folder_path + "/oto-SOFA.ini")
 
     print()
     print("Phase 3: Done.")
