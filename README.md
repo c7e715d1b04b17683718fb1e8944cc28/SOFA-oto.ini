@@ -22,6 +22,4 @@
 ## 仕様
 UTAUの音源フォルダを本プログラムへ処理をかけることで、pyopenjtalkを用いてg2pを行いphonemesのテキストファイルを生成します。
 
-その後、SOFAによってphonemesからラベリングを行います。
-
-TODO: その後ラベリングされたファイルからVCVやCVVCのoto.iniを生成します。
+その後、SOFAによってphonemesからラベリングを行い、ラベルファイルを元に独自の計算式でoto.iniへ変換します。
