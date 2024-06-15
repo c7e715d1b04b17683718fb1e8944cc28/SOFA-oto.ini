@@ -165,4 +165,4 @@ src/cktp/japanese-v2.0-45000.ckpt
 build/
 dist/
 main.spec
-main.exe
+src/main.exe
