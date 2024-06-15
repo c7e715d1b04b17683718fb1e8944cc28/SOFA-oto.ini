@@ -195,7 +195,7 @@ def main():
                 for i, (grapheme, phoneme_like_grapheme) in enumerate(zip(graphemes, phoneme_like_grapheme_list)):
                     match (len(phoneme_like_grapheme)):
                         case 1:
-                            alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol} {grapheme}'
+                            alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
                             if suffix:
                                 alias += suffix
                             oto = utaupy.otoini.Oto()
@@ -207,7 +207,7 @@ def main():
                             oto.consonant = ((phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)) * 0.2))
                             oto.cutoff = -(phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8
                         case 2:
-                            alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol} {grapheme}'
+                            alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
                             if suffix:
                                 alias += suffix
                             oto = utaupy.otoini.Oto()
