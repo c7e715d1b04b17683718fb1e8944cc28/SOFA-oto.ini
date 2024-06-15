@@ -162,7 +162,7 @@ cython_debug/
 #.idea/
 
 src/cktp/japanese-v2.0-45000.ckpt
-main.build/
-main.dist/
-main.onefile-build/
+build/
+dist/
+main.spec
 main.exe
