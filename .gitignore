@@ -164,3 +164,5 @@ cython_debug/
 src/cktp/japanese-v2.0-45000.ckpt
 main.build/
 main.dist/
+main.onefile-build/
+main.exe
