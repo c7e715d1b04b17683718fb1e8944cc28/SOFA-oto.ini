@@ -14,7 +14,7 @@
 3. 必要なモジュールをインストールする
     ```sh
     pip install -r src/SOFA/requirements.txt
-    pip install -r src/requirements.txt
+    pip install -r requirements.txt
     ```
 4. [PyTorchの公式サイト](https://pytorch.org/get-started/locally/)にて、セットアップをする
 5. main.pyを実行する
