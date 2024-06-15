@@ -178,7 +178,7 @@ def main():
                 words = file_name[1:]
                 graphemes = HIRAGANA_REGEX.findall(words)
                 label = utaupy.label.load(voicebank_folder_path + "/" + file_name + ".lab")
-                phonemes: list[utaupy.label.Phoneme] = [phoneme for phoneme in label][1:-1]
+                phonemes: list[utaupy.label.Phoneme] = [phoneme for phoneme in label if not phoneme.symbol in ["SP", "AP"]]
                 phoneme_like_grapheme_list: list[list[utaupy.label.Phoneme]] = []
                 consonant_flag = False
                 for phoneme in phonemes:
@@ -203,7 +203,7 @@ def main():
                             oto.alias = alias
                             oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
                             oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
-                            oto.preutterance = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)
+                            oto.preutterance = 0.0 if i == 0 else phoneme_like_grapheme[0].start * time_order_ratio - oto.offset
                             oto.consonant = ((phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)) * 0.2))
                             oto.cutoff = -(phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8
                         case 2:
@@ -215,7 +215,7 @@ def main():
                             oto.alias = alias
                             oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
                             oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
-                            oto.preutterance = 0.0 if i == 0 else (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)
+                            oto.preutterance = phoneme_like_grapheme[1].start * time_order_ratio - oto.offset
                             oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
                             oto.cutoff = -(phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8
                         case _:
