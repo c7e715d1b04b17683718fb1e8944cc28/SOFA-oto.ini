@@ -225,7 +225,8 @@ def main():
         otoini.write(voicebank_folder_path + "/oto-SOFAEstimation.ini")
 
     if generate_cvvc_oto_ini_flag:
-        pass
+        print("CVVC oto.ini generation is not supported yet.")
+        input("Press Enter to exit.")
 
     # Convert Easily
     # time_order_ratio = 10 ** (-4)
