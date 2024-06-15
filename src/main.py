@@ -171,10 +171,56 @@ def main():
 
     # TODO: Generate VCV and CVVC oto.ini from .lab
     if generate_vcv_oto_ini_flag:
-        # [[Label("k"), Label("a")], [Label("a")]]
+        otoini = utaupy.otoini.OtoIni()
         for wav_file in voicebank_wav_files:
             file_name = pathlib.Path(wav_file).stem
+            words = file_name[1:]
+            graphemes = HIRAGANA_REGEX.findall(words)
             label = utaupy.label.load(voicebank_folder_path + "/" + file_name + ".lab")
+            phonemes: list[utaupy.label.Phoneme] = [phoneme for phoneme in label][1:-1]
+            phoneme_like_grapheme_list: list[list[utaupy.label.Phoneme]] = []
+            consonant_flag = False
+            for phoneme in phonemes:
+                if phoneme.symbol in ["a", "i", "u", "e", "o", "N"]:
+                    if consonant_flag:
+                        phoneme_like_grapheme_list[-1].append(phoneme)
+                    else:
+                        phoneme_like_grapheme_list.append([phoneme])
+                    consonant_flag = False
+                else:
+                    phoneme_like_grapheme_list.append([phoneme])
+                    consonant_flag = True
+            time_order_ratio = 10 ** (-4)
+            for i, (grapheme, phoneme_like_grapheme) in enumerate(zip(graphemes, phoneme_like_grapheme_list)):
+                match (len(phoneme_like_grapheme)):
+                    case 1:
+                        alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol} {grapheme}'
+                        if suffix:
+                            alias += f" {suffix}"
+                        oto = utaupy.otoini.Oto()
+                        oto.filename = file_name + ".wav"
+                        oto.alias = alias
+                        oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.preutterance = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)
+                        oto.consonant = ((phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)) * 0.2))
+                        oto.cutoff = -(phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8
+                    case 2:
+                        alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol} {grapheme}'
+                        if suffix:
+                            alias += f" {suffix}"
+                        oto = utaupy.otoini.Oto()
+                        oto.filename = file_name + ".wav"
+                        oto.alias = alias
+                        oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.preutterance = 0.0 if i == 0 else (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)
+                        oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
+                        oto.cutoff = -(phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8
+                    case _:
+                        continue
+                otoini.append(oto)
+        otoini.write(voicebank_folder_path + "/oto-SOFAEstimation.ini")
 
     if generate_cvvc_oto_ini_flag:
         pass
