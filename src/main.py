@@ -196,7 +196,7 @@ def main():
                     case 1:
                         alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol} {grapheme}'
                         if suffix:
-                            alias += f" {suffix}"
+                            alias += suffix
                         oto = utaupy.otoini.Oto()
                         oto.filename = file_name + ".wav"
                         oto.alias = alias
@@ -208,7 +208,7 @@ def main():
                     case 2:
                         alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol} {grapheme}'
                         if suffix:
-                            alias += f" {suffix}"
+                            alias += suffix
                         oto = utaupy.otoini.Oto()
                         oto.filename = file_name + ".wav"
                         oto.alias = alias
