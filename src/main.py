@@ -193,33 +193,32 @@ def main():
                         consonant_flag = True
                 time_order_ratio = 10 ** (-4)
                 for i, (grapheme, phoneme_like_grapheme) in enumerate(zip(graphemes, phoneme_like_grapheme_list)):
-                    match (len(phoneme_like_grapheme)):
-                        case 1:
-                            alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
-                            if suffix:
-                                alias += suffix
-                            oto = utaupy.otoini.Oto()
-                            oto.filename = file_name + ".wav"
-                            oto.alias = alias
-                            oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
-                            oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
-                            oto.preutterance = 0.0 if i == 0 else phoneme_like_grapheme[0].start * time_order_ratio - oto.offset
-                            oto.consonant = ((phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)) * 0.2))
-                            oto.cutoff = -(phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8
-                        case 2:
-                            alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
-                            if suffix:
-                                alias += suffix
-                            oto = utaupy.otoini.Oto()
-                            oto.filename = file_name + ".wav"
-                            oto.alias = alias
-                            oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
-                            oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
-                            oto.preutterance = phoneme_like_grapheme[1].start * time_order_ratio - oto.offset
-                            oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
-                            oto.cutoff = -(phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8
-                        case _:
-                            continue
+                    if len(phoneme_like_grapheme) == 1:
+                        alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
+                        if suffix:
+                            alias += suffix
+                        oto = utaupy.otoini.Oto()
+                        oto.filename = file_name + ".wav"
+                        oto.alias = alias
+                        oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.preutterance = 0.0 if i == 0 else phoneme_like_grapheme[0].start * time_order_ratio - oto.offset
+                        oto.consonant = ((phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)) * 0.2))
+                        oto.cutoff = -(phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8
+                    elif len(phoneme_like_grapheme) == 2:
+                        alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
+                        if suffix:
+                            alias += suffix
+                        oto = utaupy.otoini.Oto()
+                        oto.filename = file_name + ".wav"
+                        oto.alias = alias
+                        oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.preutterance = phoneme_like_grapheme[1].start * time_order_ratio - oto.offset
+                        oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
+                        oto.cutoff = -(phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8
+                    else:
+                        continue
                     otoini.append(oto)
                 pbar.update(1)
         otoini.write(voicebank_folder_path + "/oto-SOFAEstimation.ini")
