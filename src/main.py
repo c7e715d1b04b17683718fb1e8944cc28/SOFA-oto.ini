@@ -93,6 +93,11 @@ def main():
     generate_vcv_oto_ini_flag = input("Generate VCV oto.ini? (y/n): ") == "y"
     generate_cvvc_oto_ini_flag = input("Generate CVVC oto.ini? (y/n): ") == "y"
     suffix = input("Enter the suffix to add to the after all entries in the oto.ini: ")
+    duplicate_alias_numbering = input("Number the duplicate aliases? (y/n): ") == "y"
+    if duplicate_alias_numbering:
+        duplicate_alias_numbering_limit = int(input("Enter the number of duplicate aliases to allow before numbering: "))
+    else:
+        duplicate_alias_numbering_limit = 0
 
     print()
     print("Phase 1: Generating text files...")
@@ -169,7 +174,6 @@ def main():
     print("Phase 3: Generating oto.ini file...")
     print()
 
-    # TODO: Generate VCV and CVVC oto.ini from .lab
     if generate_vcv_oto_ini_flag:
         otoini = utaupy.otoini.OtoIni()
         with tqdm.tqdm(total=len(voicebank_wav_files)) as pbar:
@@ -192,9 +196,15 @@ def main():
                         phoneme_like_grapheme_list.append([phoneme])
                         consonant_flag = True
                 time_order_ratio = 10 ** (-4)
+                aliases = []
                 for i, (grapheme, phoneme_like_grapheme) in enumerate(zip(graphemes, phoneme_like_grapheme_list)):
                     if len(phoneme_like_grapheme) == 1:
                         alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
+                        if alias in aliases:
+                            if duplicate_alias_numbering:
+                                if not aliases.count(alias) + 1 > duplicate_alias_numbering_limit:
+                                    alias += str(aliases.count(alias) + 1)
+                        aliases.append(alias)
                         if suffix:
                             alias += suffix
                         oto = utaupy.otoini.Oto()
@@ -207,6 +217,11 @@ def main():
                         oto.cutoff = -(phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8
                     elif len(phoneme_like_grapheme) == 2:
                         alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
+                        if alias in aliases:
+                            if duplicate_alias_numbering:
+                                if not aliases.count(alias) + 1 > duplicate_alias_numbering_limit:
+                                    alias += str(aliases.count(alias) + 1)
+                        aliases.append(alias)
                         if suffix:
                             alias += suffix
                         oto = utaupy.otoini.Oto()
@@ -223,6 +238,7 @@ def main():
                 pbar.update(1)
         otoini.write(voicebank_folder_path + "/oto-SOFAEstimation.ini")
 
+    # TODO: Generate CVVC oto.ini from .lab
     if generate_cvvc_oto_ini_flag:
         print("CVVC oto.ini generation is not supported yet.")
         input("Press Enter to exit.")
