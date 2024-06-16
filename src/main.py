@@ -125,53 +125,53 @@ def main():
     print("Phase 2: Generating label files...")
     print()
 
-    AP_detector_class = SOFA.modules.AP_detector.LoudnessSpectralcentroidAPDetector
-    get_AP = AP_detector_class()
-
-    g2p_class = PyOpenJTalkG2P
-    grapheme_to_phoneme = g2p_class()
-
-    torch.set_grad_enabled(False)
-
-    model = LitForcedAlignmentTask.load_from_checkpoint(
-        "src/cktp/japanese-v2.0-45000.ckpt"
-    )
-    model.set_inference_mode("force")
-
-    trainer = pl.Trainer(logger=False)
-
-    for wav_file in voicebank_wav_files:
-        print()
-        file_name = pathlib.Path(wav_file).stem
-        print(file_name)
-
-        dataset = grapheme_to_phoneme.get_dataset(pathlib.Path(wav_file))
-
-        predictions = trainer.predict(
-            model, dataloaders=dataset, return_predictions=True
-        )
-
-        predictions = get_AP.process(predictions)
-        predictions = SOFA.infer.post_processing(predictions)
-
-        for (
-            wav_path,
-            wav_length,
-            confidence,
-            ph_seq,
-            ph_intervals,
-            word_seq,
-            word_intervals,
-        ) in predictions:
-            label = ""
-            for ph, (start, end) in zip(ph_seq, ph_intervals):
-                start_time = int(float(start) * 10000000)
-                end_time = int(float(end) * 10000000)
-                label += f"{start_time} {end_time} {ph}\n"
-            with open(
-                voicebank_folder_path + "/" + file_name + ".lab", "w", encoding="utf-8"
-            ) as f:
-                f.write(label)
+#     AP_detector_class = SOFA.modules.AP_detector.LoudnessSpectralcentroidAPDetector
+#     get_AP = AP_detector_class()
+# 
+#     g2p_class = PyOpenJTalkG2P
+#     grapheme_to_phoneme = g2p_class()
+# 
+#     torch.set_grad_enabled(False)
+# 
+#     model = LitForcedAlignmentTask.load_from_checkpoint(
+#         "src/cktp/japanese-v2.0-45000.ckpt"
+#     )
+#     model.set_inference_mode("force")
+# 
+#     trainer = pl.Trainer(logger=False)
+# 
+#     for wav_file in voicebank_wav_files:
+#         print()
+#         file_name = pathlib.Path(wav_file).stem
+#         print(file_name)
+# 
+#         dataset = grapheme_to_phoneme.get_dataset(pathlib.Path(wav_file))
+# 
+#         predictions = trainer.predict(
+#             model, dataloaders=dataset, return_predictions=True
+#         )
+# 
+#         predictions = get_AP.process(predictions)
+#         predictions = SOFA.infer.post_processing(predictions)
+# 
+#         for (
+#             wav_path,
+#             wav_length,
+#             confidence,
+#             ph_seq,
+#             ph_intervals,
+#             word_seq,
+#             word_intervals,
+#         ) in predictions:
+#             label = ""
+#             for ph, (start, end) in zip(ph_seq, ph_intervals):
+#                 start_time = int(float(start) * 10000000)
+#                 end_time = int(float(end) * 10000000)
+#                 label += f"{start_time} {end_time} {ph}\n"
+#             with open(
+#                 voicebank_folder_path + "/" + file_name + ".lab", "w", encoding="utf-8"
+#             ) as f:
+#                 f.write(label)
 
     print()
     print("Phase 2: Done.")
@@ -225,7 +225,7 @@ def main():
                         oto.filename = file_name + ".wav"
                         oto.alias = alias
                         oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
-                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) / 3
                         oto.preutterance = 0.0 if i == 0 else phoneme_like_grapheme[0].start * time_order_ratio - oto.offset
                         oto.consonant = ((phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset)) * 0.2))
                         oto.cutoff = -(phoneme_like_grapheme[0].end * time_order_ratio - oto.offset) * 0.8
@@ -242,7 +242,7 @@ def main():
                         oto.filename = file_name + ".wav"
                         oto.alias = alias
                         oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
-                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) / 3
                         oto.preutterance = phoneme_like_grapheme[1].start * time_order_ratio - oto.offset
                         oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
                         oto.cutoff = -(phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8
@@ -259,7 +259,7 @@ def main():
                         oto.filename = file_name + ".wav"
                         oto.alias = alias
                         oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
-                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) / 3
                         oto.preutterance = phoneme_like_grapheme[1].start * time_order_ratio - oto.offset
                         oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[-1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
                         oto.cutoff = -(phoneme_like_grapheme[-1].end * time_order_ratio - oto.offset) * 0.8
