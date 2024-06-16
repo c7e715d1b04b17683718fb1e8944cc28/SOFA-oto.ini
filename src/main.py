@@ -22,10 +22,6 @@ VERSION = "0.0.1"
 HIRAGANA_REGEX = re.compile(r"([あ-ん][ぁぃぅぇぉゃゅょ]|[あ-ん])")
 KATAKANA_REGEX = re.compile(r"([ア-ン][ァィゥェォャュョ]|[ア-ン])")
 
-def detach_y(text):
-    text = re.sub(r'([a-zA-Z])y', r'\1 y', text)
-    text = re.sub(r'y([a-zA-Z])', r'y \1', text)
-    return text
 
 class PyOpenJTalkG2P:
     def __call__(self, text: str):
@@ -46,7 +42,7 @@ class PyOpenJTalkG2P:
         ph_seq = ["SP"]
         ph_idx_to_word_idx = [-1]
         for word in word_seq_raw:
-            ph_raw = detach_y(pyopenjtalk.g2p(word))
+            ph_raw = self.detach_y(pyopenjtalk.g2p(word))
             if not ph_raw:
                 warnings.warn(f"Word {word} is not in the dictionary. Ignored.")
                 continue
@@ -67,6 +63,11 @@ class PyOpenJTalkG2P:
             word_seq_idx += 1
 
         return ph_seq, word_seq, ph_idx_to_word_idx
+
+    def detach_y(text):
+        text = re.sub(r'([a-zA-Z])y', r'\1 y', text)
+        text = re.sub(r'y([a-zA-Z])', r'y \1', text)
+        return text
 
     def get_dataset(self, wav_path: pathlib.Path):
         dataset = []
@@ -202,7 +203,7 @@ def main():
                 #         consonant_flag = True
                 index = 0
                 for grapheme in graphemes:
-                    ph_raw = detach_y(pyopenjtalk.g2p(grapheme))
+                    ph_raw = PyOpenJTalkG2P.detach_y(pyopenjtalk.g2p(grapheme))
                     if not ph_raw:
                         warnings.warn(f"Grapheme {grapheme} is not in the dictionary. Ignored.")
                         continue
