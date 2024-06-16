@@ -20,7 +20,12 @@ import utaupy
 
 VERSION = "0.0.1"
 HIRAGANA_REGEX = re.compile(r"([あ-ん][ぁぃぅぇぉゃゅょ]|[あ-ん])")
+KATAKANA_REGEX = re.compile(r"([ア-ン][ァィゥェォャュョ]|[ア-ン])")
 
+def detach_y(text):
+    text = re.sub(r'([a-zA-Z])y', r'\1 y', text)
+    text = re.sub(r'y([a-zA-Z])', r'y \1', text)
+    return text
 
 class PyOpenJTalkG2P:
     def __call__(self, text: str):
@@ -41,7 +46,7 @@ class PyOpenJTalkG2P:
         ph_seq = ["SP"]
         ph_idx_to_word_idx = [-1]
         for word in word_seq_raw:
-            ph_raw = pyopenjtalk.g2p(word)
+            ph_raw = detach_y(pyopenjtalk.g2p(word))
             if not ph_raw:
                 warnings.warn(f"Word {word} is not in the dictionary. Ignored.")
                 continue
@@ -95,7 +100,7 @@ def main():
     suffix = input("Enter the suffix to add to the after all entries in the oto.ini: ")
     duplicate_alias_numbering = input("Number the duplicate aliases? (y/n): ") == "y"
     if duplicate_alias_numbering:
-        duplicate_alias_numbering_limit = int(input("Enter the number of duplicate aliases to allow before numbering: "))
+        duplicate_alias_numbering_limit = int(input("Enter the number of duplicate aliases to allow before numbering (Default 100): ") or "100")
     else:
         duplicate_alias_numbering_limit = 0
 
@@ -107,7 +112,7 @@ def main():
         for wav_file in voicebank_wav_files:
             file_name = pathlib.Path(wav_file).stem
             words = file_name[1:]
-            graphemes = HIRAGANA_REGEX.findall(words)
+            graphemes = [*HIRAGANA_REGEX.findall(words), *KATAKANA_REGEX.findall(words)]
             with open(
                 voicebank_folder_path + "/" + file_name + ".txt", "w", encoding="utf-8"
             ) as f:
@@ -180,21 +185,30 @@ def main():
             for wav_file in voicebank_wav_files:
                 file_name = pathlib.Path(wav_file).stem
                 words = file_name[1:]
-                graphemes = HIRAGANA_REGEX.findall(words)
+                graphemes = [*HIRAGANA_REGEX.findall(words), *KATAKANA_REGEX.findall(words)]
                 label = utaupy.label.load(voicebank_folder_path + "/" + file_name + ".lab")
                 phonemes: list[utaupy.label.Phoneme] = [phoneme for phoneme in label if not phoneme.symbol in ["SP", "AP"]]
                 phoneme_like_grapheme_list: list[list[utaupy.label.Phoneme]] = []
-                consonant_flag = False
-                for phoneme in phonemes:
-                    if phoneme.symbol in ["a", "i", "u", "e", "o", "N"]:
-                        if consonant_flag:
-                            phoneme_like_grapheme_list[-1].append(phoneme)
-                        else:
-                            phoneme_like_grapheme_list.append([phoneme])
-                        consonant_flag = False
-                    else:
-                        phoneme_like_grapheme_list.append([phoneme])
-                        consonant_flag = True
+                # consonant_flag = False
+                # for phoneme in phonemes:
+                #     if phoneme.symbol in ["a", "i", "u", "e", "o", "N"]:
+                #         if consonant_flag:
+                #             phoneme_like_grapheme_list[-1].append(phoneme)
+                #         else:
+                #             phoneme_like_grapheme_list.append([phoneme])
+                #         consonant_flag = False
+                #     else:
+                #         phoneme_like_grapheme_list.append([phoneme])
+                #         consonant_flag = True
+                index = 0
+                for grapheme in graphemes:
+                    ph_raw = detach_y(pyopenjtalk.g2p(grapheme))
+                    if not ph_raw:
+                        warnings.warn(f"Grapheme {grapheme} is not in the dictionary. Ignored.")
+                        continue
+                    phones = ph_raw.split(" ")
+                    phoneme_like_grapheme_list.append(phonemes[index:index + len(phones)])
+                    index += len(phones)
                 time_order_ratio = 10 ** (-4)
                 aliases = []
                 for i, (grapheme, phoneme_like_grapheme) in enumerate(zip(graphemes, phoneme_like_grapheme_list)):
@@ -233,7 +247,22 @@ def main():
                         oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
                         oto.cutoff = -(phoneme_like_grapheme[1].end * time_order_ratio - oto.offset) * 0.8
                     else:
-                        continue
+                        alias = f'- {grapheme}' if i == 0 else f'{phoneme_like_grapheme_list[i - 1][-1].symbol.lower()} {grapheme}'
+                        if alias in aliases:
+                            if duplicate_alias_numbering:
+                                if not aliases.count(alias) + 1 > duplicate_alias_numbering_limit:
+                                    alias += str(aliases.count(alias) + 1)
+                        aliases.append(alias)
+                        if suffix:
+                            alias += suffix
+                        oto = utaupy.otoini.Oto()
+                        oto.filename = file_name + ".wav"
+                        oto.alias = alias
+                        oto.offset = phoneme_like_grapheme[0].start * time_order_ratio if i == 0 else (phoneme_like_grapheme[0].start - (phoneme_like_grapheme_list[i - 1][-1].end - phoneme_like_grapheme_list[i - 1][-1].start) * 0.2) * time_order_ratio
+                        oto.overlap = 0.0 if i == 0 else (phoneme_like_grapheme[0].start * time_order_ratio - oto.offset) * 0.5
+                        oto.preutterance = phoneme_like_grapheme[1].start * time_order_ratio - oto.offset
+                        oto.consonant = ((phoneme_like_grapheme[1].start * time_order_ratio - oto.offset) + ((((phoneme_like_grapheme[-1].end * time_order_ratio - oto.offset) * 0.8) - (phoneme_like_grapheme[1].start * time_order_ratio - oto.offset)) * 0.2))
+                        oto.cutoff = -(phoneme_like_grapheme[-1].end * time_order_ratio - oto.offset) * 0.8
                     otoini.append(oto)
                 pbar.update(1)
         otoini.write(voicebank_folder_path + "/oto-SOFAEstimation.ini")
