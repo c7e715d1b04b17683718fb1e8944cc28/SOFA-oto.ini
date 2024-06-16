@@ -1,6 +1,10 @@
 # SOFA-oto.ini
 [SOFA](https://github.com/qiuqiao/SOFA)を使用して、UTAUのoto.iniを生成する
 
+## 前提要件
+- C++ によるデスクトップ開発 (Visual Studio)
+- CMake
+
 ## 使い方 (Windows)
 1. このリポジトリをsubmoduleを含めcloneする
     ```sh
